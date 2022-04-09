@@ -1,0 +1,22 @@
+name: CI test
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: echo docker and compose version
+        run: docker -v && docker-compose -v
+      - name: build stateful server and migrate
+        run: docker-compose up -d --build postgres
+      - name: create coverage dir
+        run: mkdir -p coverage && chmod 777 coverage
+      - name: run migrate & test
+        run: docker-compose run prebuild-test
+      # Save coverage report in Coveralls
+      #- name: Upload coverage to Codecov
+      #  uses: codecov/codecov-action@v2
+      #  env:
+      #   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}

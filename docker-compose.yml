@@ -1,0 +1,55 @@
+version: '3.7'
+
+services:
+  # 開発用
+  app:
+    build:
+      context: .
+      dockerfile: ./infra/node/Dockerfile
+      target: dev
+    ports:
+      - '3000:3000'
+      - '9229:9229'
+    # PID１問題
+    # https://text.superbrothers.dev/200328-how-to-avoid-pid-1-problem-in-kubernetes/
+    init: true
+    volumes:
+      # 開発環境ではnode_modulesをマウントさせる。イメージビルド時はnpm ciは実行していない。開発初期にコンテナ上でnpm ciを行う。
+      - '.:/home/node/nestjs_docker_sample'
+    env_file:
+      - .env.local
+    command: npm run start:dev
+
+  prebuild-test:
+    build:
+      context: .
+      dockerfile: ./infra/node/Dockerfile
+      target: test
+    ports:
+      - '3000:3000'
+    init: true
+    volumes:
+      - ./:/home/node/nestjs_docker_sample
+      - ./coverage:/home/node/nestjs_docker_sample/coverage
+      # https://stackoverflow.com/questions/30043'872/docker-compose-node-modules-not-present-in-a-volume-after-npm-install-succeeds
+      # テスト環境ではnode_modulesをマウントさせない。ホスト側のnode_modulesをマウントしてしまうと、イメージビルド時でインストールしたnpm ciがまっさらになってしまうのでCI上でもう一度インストールする必要がある。
+      - node_modules:/home/node/nestjs_docker_sample/node_modules
+    env_file:
+      - .env.local
+    command: npm run ci:test
+
+  postgres:
+    image: postgres:11
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./infra/postgres/initdb:/docker-entrypoint-initdb.d
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+
+
+volumes:
+  pg-data:
+    driver: 'local'
+  node_modules:
