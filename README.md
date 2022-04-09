@@ -71,4 +71,36 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
-# nestjs
+# 開発の仕方
+
+## 初期設定
+```
+$ make init
+```
+
+## 開発中
+```
+$ make dev
+```
+
+終わったら Cntl-c でkill
+## e2eテスト
+```
+$ make infra
+```
+別タブで
+```
+$ make e2e
+```
+
+## ユニットテスト
+```
+$ make unit
+```
+
+## コマンド実行
+npm install とか prisma-cli とか nest-cli のコマンドを実行したいとき
+```
+$ make bash
+```
+でコンテナに入って実行する。おわったら exit する。
