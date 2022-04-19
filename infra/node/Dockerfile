@@ -64,7 +64,7 @@ FROM test as build
 
 COPY --chown=node . .
 
-RUN npm run build
+RUN npx prisma generate && npm run build
 
 ###############
 #    prod     #
@@ -79,5 +79,7 @@ COPY --from=build /$APP_HOME/dist /$APP_HOME/.dockerignore ./
 
 RUN npm ci --only=production \
     && npm cache clean --force
+
+COPY --from=build /$APP_HOME/node_modules/.prisma ./node_modules/.prisma
 
 CMD ["node", "src/main.js"]
